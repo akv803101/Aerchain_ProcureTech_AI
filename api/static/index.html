@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aerchain — ProcureTech AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #1a1f2e;
+      border-bottom: 1px solid #2d3748;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 600; color: #63b3ed; }
+    header span { font-size: 0.8rem; color: #718096; }
+    .toolbar {
+      background: #1a1f2e;
+      border-bottom: 1px solid #2d3748;
+      padding: 8px 24px;
+      display: flex;
+      gap: 8px;
+    }
+    .toolbar button {
+      font-size: 0.78rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid #4a5568;
+      background: #2d3748;
+      color: #a0aec0;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .toolbar button:hover { background: #4a5568; color: #e2e8f0; }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .msg {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: #2b4c7e;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.assistant {
+      align-self: flex-start;
+      background: #1e2a3a;
+      border: 1px solid #2d4a6b;
+      border-bottom-left-radius: 4px;
+    }
+    .msg.system {
+      align-self: center;
+      background: #2d3748;
+      color: #a0aec0;
+      font-size: 0.78rem;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    .msg .intent-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      background: #2d4a6b;
+      color: #63b3ed;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .spinner {
+      align-self: flex-start;
+      color: #718096;
+      font-size: 0.85rem;
+      padding: 8px 4px;
+    }
+    .spinner::after {
+      content: "";
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #4a5568;
+      border-top-color: #63b3ed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    form {
+      background: #1a1f2e;
+      border-top: 1px solid #2d3748;
+      padding: 16px 24px;
+      display: flex;
+      gap: 10px;
+    }
+    input[type=text] {
+      flex: 1;
+      background: #2d3748;
+      border: 1px solid #4a5568;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    input[type=text]:focus { border-color: #63b3ed; }
+    input[type=text]::placeholder { color: #718096; }
+    button[type=submit] {
+      background: #2b6cb0;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button[type=submit]:hover { background: #3182ce; }
+    button[type=submit]:disabled { background: #4a5568; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<header style="position:relative;">
+  <img id="aer-logo" src="/aerchain-logo.png" alt="" onerror="this.style.display='none'" style="height:28px;width:auto;object-fit:contain;">
+  <h1 style="color:#E8502A;">Aerchain <span style="color:#e2e8f0;font-weight:400;">ProcureTech AI</span></h1>
+  <button id="rfx-select-btn" onclick="openRfxPicker()" style="background:#2d3748;border:1px dashed #4a5568;color:#a0aec0;border-radius:6px;font-size:.75rem;padding:4px 12px;cursor:pointer;white-space:nowrap;">📂 Select RFX</button>
+  <div id="rfx-active-wrap" style="display:none;align-items:center;gap:6px;">
+    <span id="rfx-label" style="font-size:0.8rem;color:#718096;cursor:pointer;" onclick="openRfxPicker()">RFx: —</span>
+    <button id="rfx-info-btn" onclick="toggleRfxPopover(event)" title="RFX details"
+      style="background:none;border:1px solid #4a5568;color:#718096;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:700;cursor:pointer;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">!</button>
+  </div>
+  <div id="rfx-popover" style="display:none;position:absolute;top:44px;left:16px;width:300px;background:#1a1f2e;border:1px solid #2d4a6b;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200;padding:14px 16px;font-size:.78rem;line-height:1.6;color:#e2e8f0;">
+    <div style="font-weight:700;color:#63b3ed;margin-bottom:8px;font-size:.82rem;">📋 RFX-001 — Corrugated Packaging</div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;color:#a0aec0;margin-bottom:10px;">
+      <span>Issued</span><span style="color:#e2e8f0;">2026-09-01</span>
+      <span>Deadline</span><span style="color:#e2e8f0;">2026-09-10</span>
+      <span>Currency</span><span style="color:#e2e8f0;">INR</span>
+      <span>Payment</span><span style="color:#e2e8f0;">30 days</span>
+      <span>Delivery</span><span style="color:#e2e8f0;">14 days from PO</span>
+    </div>
+    <div style="border-top:1px solid #2d3748;padding-top:8px;margin-bottom:8px;">
+      <div style="color:#a0aec0;margin-bottom:4px;">30 line items</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        <span style="background:#1a4731;color:#68d391;font-size:.65rem;padding:1px 7px;border-radius:4px;">3-ply boxes ×5</span>
+        <span style="background:#1a4731;color:#68d391;font-size:.65rem;padding:1px 7px;border-radius:4px;">5-ply boxes ×5</span>
+        <span style="background:#1a4731;color:#68d391;font-size:.65rem;padding:1px 7px;border-radius:4px;">7-ply heavy-duty ×5</span>
+        <span style="background:#1a3a5c;color:#90cdf4;font-size:.65rem;padding:1px 7px;border-radius:4px;">Archive boxes ×2</span>
+        <span style="background:#1a3a5c;color:#90cdf4;font-size:.65rem;padding:1px 7px;border-radius:4px;">Mailers ×2</span>
+        <span style="background:#2d2d2d;color:#a0aec0;font-size:.65rem;padding:1px 7px;border-radius:4px;">Specialty ×11</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid #2d3748;padding-top:8px;color:#a0aec0;font-size:.72rem;">
+      <span style="color:#e2e8f0;font-weight:600;">Questionnaire (5):</span> ISO cert · rejection rate · lead time · location · deviations
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button onclick="openRfxCreate()">✏ Create RFX</button>
+  <button onclick="runIngest()" id="ingest-btn" class="rfx-btn" style="display:none">⬆ Ingest RFX</button>
+  <button onclick="openSourcePanel()" class="rfx-btn" style="display:none">📄 Source Docs</button>
+  <button onclick="openDataPanel()" id="data-btn" class="rfx-btn" style="display:none">📊 View Data</button>
+  <button onclick="openChartsPanel()" class="rfx-btn" style="display:none">📈 Charts</button>
+  <button onclick="quickSend('Show status')" class="rfx-btn" style="display:none">Status</button>
+  <button onclick="quickSend('Show flag summary for all vendors')" class="rfx-btn" style="display:none">Flags</button>
+  <button onclick="quickSend('Show questionnaire responses for all vendors')" class="rfx-btn" style="display:none">Questionnaire</button>
+  <button onclick="downloadExport()" class="rfx-btn" style="display:none">⬇ Export Excel</button>
+</div>
+
+<div id="messages">
+  <div id="welcome-msg" class="msg system">Select an RFX above to get started.</div>
+</div>
+
+<form id="chat-form">
+  <input type="text" id="msg-input" placeholder="e.g. Which vendor has the lowest price for 5-ply boxes?" autocomplete="off">
+  <button type="submit" id="send-btn">Send</button>
+</form>
+
+<!-- ── RFX Picker Modal ─────────────────────────────────────── -->
+<div id="rfx-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:#1a1f2e;border:1px solid #2d4a6b;border-radius:14px;width:min(420px,95vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #2d3748;">
+      <span style="font-weight:700;color:#63b3ed;font-size:.9rem;">📂 Select RFX</span>
+      <button onclick="closeRfxPicker()" style="background:none;border:none;color:#a0aec0;font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:10px 12px;border-bottom:1px solid #2d3748;">
+      <input id="rfx-search" type="text" placeholder="Search by ID or category…" oninput="filterRfxList()"
+        style="width:100%;background:#0f1117;border:1px solid #4a5568;color:#e2e8f0;border-radius:8px;padding:7px 12px;font-size:.82rem;outline:none;">
+    </div>
+    <div id="rfx-picker-list" style="overflow-y:auto;flex:1;padding:8px;min-height:80px;"></div>
+    <div style="padding:10px 16px;border-top:1px solid #2d3748;font-size:.72rem;color:#718096;">
+      No RFX yet? <span onclick="closeRfxPicker();openRfxCreate();" style="color:#63b3ed;cursor:pointer;text-decoration:underline;">Create one with AI ✏</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Create RFX Modal ─────────────────────────────────────── -->
+<div id="rfx-create-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#1a1f2e;border:1px solid #2d4a6b;border-radius:14px;width:min(640px,95vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #2d3748;">
+      <span style="font-weight:700;color:#63b3ed;font-size:.95rem;">✏ Create RFX with AI Co-pilot</span>
+      <button onclick="closeRfxCreate()" style="background:none;border:none;color:#a0aec0;font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:16px 20px;border-bottom:1px solid #2d3748;">
+      <div style="font-size:.78rem;color:#718096;margin-bottom:10px;">Describe what you need to procure — category, quantity, specifications, delivery terms. Claude will generate a structured RFx.</div>
+      <textarea id="rfx-desc" rows="4" placeholder="e.g. I need corrugated packaging — 30 line items across 3-ply, 5-ply and 7-ply boxes for an e-commerce warehouse. INR pricing, 14-day delivery, 30-day payment terms. Include archive boxes and literature mailers."
+        style="width:100%;background:#0f1117;border:1px solid #4a5568;color:#e2e8f0;border-radius:8px;padding:10px 12px;font-size:.85rem;resize:vertical;outline:none;font-family:inherit;line-height:1.5;"></textarea>
+      <button id="rfx-gen-btn" onclick="generateRfx()" style="margin-top:10px;background:#2b6cb0;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:.85rem;font-weight:600;cursor:pointer;">Generate RFX</button>
+    </div>
+    <div id="rfx-preview" style="overflow-y:auto;flex:1;padding:16px 20px;display:none;">
+      <div id="rfx-preview-body"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button onclick="saveRfx()" style="background:#276749;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:.85rem;font-weight:600;cursor:pointer;">✓ Save & Use this RFX</button>
+        <button onclick="document.getElementById('rfx-preview').style.display='none'" style="background:#2d3748;color:#a0aec0;border:none;border-radius:8px;padding:8px 16px;font-size:.85rem;cursor:pointer;">← Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Charts Drawer ─────────────────────────────────────────── -->
+<div id="charts-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;" onclick="closeChartsPanel()"></div>
+<div id="charts-drawer" style="display:none;position:fixed;top:0;right:0;height:100vh;width:min(860px,95vw);background:#1a1f2e;border-left:1px solid #2d3748;z-index:101;flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #2d3748;flex-shrink:0;">
+    <span style="font-weight:600;color:#63b3ed;font-size:.95rem;">📈 Analytics Charts</span>
+    <button onclick="closeChartsPanel()" style="background:none;border:none;color:#a0aec0;font-size:1.2rem;cursor:pointer;padding:2px 6px;">✕</button>
+  </div>
+  <!-- Tab bar -->
+  <div style="display:flex;gap:0;border-bottom:1px solid #2d3748;flex-shrink:0;">
+    <button class="chart-tab active" id="tab-price" onclick="switchChartTab('price')" style="flex:1;padding:9px;font-size:.78rem;background:#1a1f2e;border:none;border-bottom:2px solid #63b3ed;color:#63b3ed;cursor:pointer;">Price Comparison</button>
+    <button class="chart-tab" id="tab-scorecard" onclick="switchChartTab('scorecard')" style="flex:1;padding:9px;font-size:.78rem;background:#1a1f2e;border:none;border-bottom:2px solid transparent;color:#718096;cursor:pointer;">Vendor Scorecard</button>
+    <button class="chart-tab" id="tab-coverage" onclick="switchChartTab('coverage')" style="flex:1;padding:9px;font-size:.78rem;background:#1a1f2e;border:none;border-bottom:2px solid transparent;color:#718096;cursor:pointer;">Coverage Heatmap</button>
+  </div>
+  <div id="charts-body" style="overflow-y:auto;flex:1;padding:20px;">
+    <!-- Price Comparison -->
+    <div id="chart-panel-price">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <label style="font-size:.78rem;color:#a0aec0;">Line item:</label>
+        <select id="line-picker" onchange="loadPriceChart()" style="background:#2d3748;border:1px solid #4a5568;color:#e2e8f0;border-radius:6px;padding:4px 10px;font-size:.78rem;"></select>
+      </div>
+      <div style="position:relative;height:320px;"><canvas id="chart-price"></canvas></div>
+    </div>
+    <!-- Scorecard -->
+    <div id="chart-panel-scorecard" style="display:none;">
+      <div style="position:relative;height:320px;"><canvas id="chart-scorecard"></canvas></div>
+      <div id="scorecard-flags" style="margin-top:14px;font-size:.75rem;color:#a0aec0;"></div>
+    </div>
+    <!-- Coverage -->
+    <div id="chart-panel-coverage" style="display:none;">
+      <div style="font-size:.75rem;color:#718096;margin-bottom:10px;">🟢 Priced &nbsp;🔴 Missing &nbsp;— Confidence shown on cell</div>
+      <div id="coverage-grid" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Source Docs Drawer ───────────────────────────────────── -->
+<div id="src-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;" onclick="closeSourcePanel()"></div>
+<div id="src-drawer" style="display:none;position:fixed;top:0;right:0;height:100vh;width:min(900px,95vw);background:#1a1f2e;border-left:1px solid #2d3748;z-index:101;flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #2d3748;flex-shrink:0;">
+    <span style="font-weight:600;color:#f6ad55;font-size:.95rem;">📄 Raw Source Files — Vendor Submissions</span>
+    <button onclick="closeSourcePanel()" style="background:none;border:none;color:#a0aec0;font-size:1.2rem;cursor:pointer;padding:2px 6px;">✕</button>
+  </div>
+  <div style="padding:8px 20px;border-bottom:1px solid #2d3748;flex-shrink:0;">
+    <span style="font-size:.75rem;color:#718096;">These are the original unstructured files vendors submitted — Excel sheets, PDFs, Word docs, images, and plain text. The AI extraction pipeline reads each format and normalises them into the structured comparison table.</span>
+  </div>
+  <div id="src-body" style="overflow-y:auto;flex:1;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start;">
+    <p style="color:#718096;font-size:.85rem;grid-column:1/-1;">Loading…</p>
+  </div>
+</div>
+
+<!-- ── Data Drawer ──────────────────────────────────────────── -->
+<div id="drawer-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;" onclick="closeDataPanel()"></div>
+<div id="drawer" style="display:none;position:fixed;top:0;right:0;height:100vh;width:min(860px,95vw);background:#1a1f2e;border-left:1px solid #2d3748;z-index:101;flex-direction:column;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #2d3748;flex-shrink:0;">
+    <span style="font-weight:600;color:#63b3ed;font-size:.95rem;">📊 Extracted Vendor Data — <span id="drawer-rfx"></span></span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <select id="vendor-filter" onchange="renderTable()" style="background:#2d3748;border:1px solid #4a5568;color:#e2e8f0;border-radius:6px;padding:4px 8px;font-size:.78rem;">
+        <option value="">All Vendors</option>
+      </select>
+      <button onclick="closeDataPanel()" style="background:none;border:none;color:#a0aec0;font-size:1.2rem;cursor:pointer;padding:2px 6px;">✕</button>
+    </div>
+  </div>
+  <div id="drawer-body" style="overflow-y:auto;flex:1;padding:16px;">
+    <p style="color:#718096;font-size:.85rem;">Loading…</p>
+  </div>
+</div>
+
+<style>
+  #drawer { display:none; }
+  #drawer.open { display:flex; }
+  #drawer-overlay.open { display:block; }
+
+  .vtable { width:100%;border-collapse:collapse;font-size:.8rem; }
+  .vtable th { background:#1F4E79;color:#fff;padding:6px 10px;text-align:left;position:sticky;top:0; }
+  .vtable td { padding:5px 10px;border-bottom:1px solid #2d3748;vertical-align:top;color:#e2e8f0; }
+  .vtable tr.conf-bad  td { background:#3d1a1a; }
+  .vtable tr.conf-warn td { background:#2d2a1a; }
+  .flag-chip { display:inline-block;font-size:.65rem;padding:1px 6px;border-radius:10px;background:#2d4a6b;color:#90cdf4;margin:1px; }
+  .vheader { margin:16px 0 8px;font-size:.85rem;font-weight:600;color:#63b3ed;border-bottom:1px solid #2d3748;padding-bottom:4px; }
+
+  /* Source Docs cards */
+  .src-card {
+    background:#0f1117;
+    border:1px solid #2d3748;
+    border-radius:10px;
+    padding:14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .src-card-header {
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .fmt-badge {
+    font-size:.65rem;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:4px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    flex-shrink:0;
+  }
+  .fmt-xlsx { background:#1a4731;color:#68d391; }
+  .fmt-pdf  { background:#4a1b1b;color:#fc8181; }
+  .fmt-docx { background:#1a3a5c;color:#90cdf4; }
+  .fmt-jpg,.fmt-jpeg,.fmt-png,.fmt-image { background:#3d2b00;color:#f6ad55; }
+  .fmt-txt  { background:#2d2d2d;color:#a0aec0; }
+  .src-filename { font-size:.8rem;font-weight:600;color:#e2e8f0;word-break:break-all; }
+  .src-meta { font-size:.7rem;color:#718096; }
+  .src-preview {
+    background:#1a1f2e;
+    border:1px solid #2d3748;
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:.72rem;
+    font-family:"SF Mono","Fira Code",monospace;
+    color:#a0aec0;
+    white-space:pre-wrap;
+    word-break:break-word;
+    max-height:180px;
+    overflow-y:auto;
+    line-height:1.5;
+  }
+  .src-img-preview {
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    border-radius:6px;
+    border:1px solid #2d3748;
+    background:#0f1117;
+  }
+</style>
+
+<script>
+  let rfxId = null;
+  const msgs  = document.getElementById("messages");
+  const input = document.getElementById("msg-input");
+  const btn   = document.getElementById("send-btn");
+
+  function addMsg(role, text, intent, chartData) {
+    const d = document.createElement("div");
+    d.className = "msg " + role;
+    if (intent) {
+      const tag = document.createElement("div");
+      tag.className = "intent-tag";
+      tag.textContent = intent;
+      d.appendChild(tag);
+    }
+    const t = document.createElement("span");
+    t.textContent = text;
+    d.appendChild(t);
+    msgs.appendChild(d);
+
+    if (chartData?.type === "chart" && chartData?.chart_config) {
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = "margin:6px 0 12px 32px;max-width:480px;background:#0f1623;border:1px solid #2d4a6b;border-radius:10px;padding:14px;";
+      const canvas = document.createElement("canvas");
+      wrapper.appendChild(canvas);
+      msgs.appendChild(wrapper);
+      requestAnimationFrame(() => {
+        new Chart(canvas, chartData.chart_config);
+      });
+    }
+
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addSpinner() {
+    const d = document.createElement("div");
+    d.className = "spinner";
+    d.id = "spinner";
+    d.textContent = "Thinking";
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  }
+
+  function removeSpinner() {
+    const s = document.getElementById("spinner");
+    if (s) s.remove();
+  }
+
+  async function send(message) {
+    if (!message.trim()) return;
+    if (!rfxId) { addMsg("system", "Select an RFX first."); return; }
+    addMsg("user", message);
+    input.value = "";
+    btn.disabled = true;
+    const spinner = addSpinner();
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, rfx_id: rfxId }),
+      });
+      const data = await res.json();
+      removeSpinner();
+      addMsg("assistant", data.response, data.intent, data.data);
+    } catch (e) {
+      removeSpinner();
+      addMsg("assistant", "Error: " + e.message, "ERROR");
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  }
+
+  function quickSend(msg) {
+    if (!rfxId) { addMsg("system", "Select an RFX first."); return; }
+    input.value = msg;
+    send(msg);
+  }
+
+  async function runIngest() {
+    const ingestBtn = document.getElementById("ingest-btn");
+
+    // Check if data already exists before re-running
+    try {
+      const statusRes = await fetch(`/ingest/status?rfx_id=${rfxId}`);
+      const statusData = await statusRes.json();
+      if (statusData.ready) {
+        const proceed = confirm(
+          `${rfxId} already has ${statusData.vendors_processed} vendor(s) ingested.\n\nRe-ingesting will overwrite all extracted data. Proceed?`
+        );
+        if (!proceed) return;
+      }
+    } catch (_) { /* proceed if status check fails */ }
+
+    ingestBtn.disabled = true;
+    ingestBtn.textContent = "Ingesting RFX…";
+    addMsg("system", "Running ingestion pipeline — this takes ~30–60s while Claude processes each vendor file…");
+    const spinner = addSpinner();
+
+    try {
+      const res = await fetch("/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rfx_path: `data/rfx/${rfxId}.json`,
+          vendor_dir: "data/vendor_responses",
+        }),
+      });
+      const data = await res.json();
+      removeSpinner();
+      if (!res.ok) {
+        addMsg("assistant", "Ingestion failed: " + (data.detail || JSON.stringify(data)), "ERROR");
+      } else {
+        const vendors = data.vendors_processed ?? "?";
+        const lines   = data.total_lines ?? "?";
+        const failed  = (data.vendors_failed ?? []);
+        let summary = `Ingestion complete.\n• Vendors processed: ${vendors}\n• Total lines: ${lines}`;
+        if (failed.length > 0) summary += `\n• Failed: ${failed.join(", ")}`;
+        if (data.total_flags && Object.keys(data.total_flags).length > 0) {
+          summary += "\n\nFlags raised:";
+          for (const [flag, count] of Object.entries(data.total_flags)) {
+            summary += `\n  ${flag}: ${count}`;
+          }
+        }
+        if (!data.ready) summary += "\n\n⚠ No vendors were successfully ingested.";
+        addMsg("assistant", summary, "INGEST");
+      }
+    } catch (e) {
+      removeSpinner();
+      addMsg("assistant", "Ingestion error: " + e.message, "ERROR");
+    } finally {
+      ingestBtn.disabled = false;
+      ingestBtn.textContent = "⬆ Ingest RFX";
+    }
+  }
+
+  async function downloadExport() {
+    const a = document.createElement("a");
+    a.href = `/export?rfx_id=${rfxId}`;
+    a.download = `comparison_${rfxId}.xlsx`;
+    a.click();
+  }
+
+  document.getElementById("chat-form").addEventListener("submit", e => {
+    e.preventDefault();
+    send(input.value);
+  });
+
+  // Rotating placeholder
+  const _placeholders = [
+    "Which vendor has the lowest price for 5-ply boxes?",
+    "Compare all vendor prices for archive boxes",
+    "Who has the best lead time and is ISO certified?",
+    "What is the price difference between vendor_a and vendor_b?",
+    "Show me vendors with confidence below 0.7",
+    "Which vendor offers free freight?",
+    "Rank all vendors by average price across all lines",
+    "Which vendors have missing prices and why?",
+  ];
+  let _phi = 0;
+  setInterval(() => {
+    _phi = (_phi + 1) % _placeholders.length;
+    input.placeholder = "e.g. " + _placeholders[_phi];
+  }, 4000);
+
+  input.focus();
+
+  // ── Data Drawer ────────────────────────────────────────────
+  let _drawerData = null;
+
+  async function openDataPanel() {
+    document.getElementById("drawer").style.display = "flex";
+    document.getElementById("drawer-overlay").style.display = "block";
+    document.getElementById("drawer-rfx").textContent = rfxId;
+    document.getElementById("drawer-body").innerHTML = "<p style='color:#718096;font-size:.85rem;'>Loading…</p>";
+
+    try {
+      const res = await fetch(`/data/comparison?rfx_id=${rfxId}`);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      _drawerData = await res.json();
+
+      // Populate vendor filter
+      const sel = document.getElementById("vendor-filter");
+      sel.innerHTML = '<option value="">All Vendors</option>';
+      for (const vid of Object.keys(_drawerData.vendors || {})) {
+        const opt = document.createElement("option");
+        opt.value = vid; opt.textContent = vid;
+        sel.appendChild(opt);
+      }
+      renderTable();
+    } catch (e) {
+      document.getElementById("drawer-body").innerHTML =
+        `<p style='color:#fc8181;font-size:.85rem;'>Error loading data: ${e.message}</p>`;
+    }
+  }
+
+  function closeDataPanel() {
+    document.getElementById("drawer").style.display = "none";
+    document.getElementById("drawer-overlay").style.display = "none";
+  }
+
+  function renderTable() {
+    if (!_drawerData) return;
+    const filter = document.getElementById("vendor-filter").value;
+    const vendors = _drawerData.vendors || {};
+    const body = document.getElementById("drawer-body");
+
+    if (!Object.keys(vendors).length) {
+      body.innerHTML = "<p style='color:#718096;font-size:.85rem;'>No data ingested yet. Click ⬆ Ingest RFX first.</p>";
+      return;
+    }
+
+    let html = "";
+    for (const [vid, rows] of Object.entries(vendors)) {
+      if (filter && vid !== filter) continue;
+      const ok    = rows.filter(r => (r.confidence ?? 0) >= 0.7).length;
+      const warn  = rows.filter(r => (r.confidence ?? 0) >= 0.3 && (r.confidence ?? 0) < 0.7).length;
+      const bad   = rows.filter(r => (r.confidence ?? 0) < 0.3).length;
+      html += `<div class="vheader">${vid} &nbsp;<span style="font-size:.7rem;color:#a0aec0;font-weight:400;">${rows.length} lines &nbsp;|&nbsp; ✅ ${ok} &nbsp;⚠ ${warn} &nbsp;🔴 ${bad}</span></div>`;
+      html += `<table class="vtable"><thead><tr>
+        <th>#</th><th>Description</th><th>Price (INR)</th><th>Unit</th><th>Currency</th><th>Conf.</th><th>Flags</th>
+      </tr></thead><tbody>`;
+      for (const r of rows) {
+        const conf = r.confidence ?? 0;
+        const cls  = conf < 0.3 ? "conf-bad" : conf < 0.7 ? "conf-warn" : "";
+        const flagHtml = (r.flags || []).map(f => `<span class="flag-chip">${f}</span>`).join("");
+        const price = r.price_inr != null ? `₹${r.price_inr.toLocaleString("en-IN", {minimumFractionDigits:2})}` : "—";
+        html += `<tr class="${cls}">
+          <td>${r.line_id}</td>
+          <td>${r.description || "—"}</td>
+          <td style="white-space:nowrap">${price}</td>
+          <td>${r.unit_raw || "—"}</td>
+          <td>${r.currency_raw || "—"}</td>
+          <td style="white-space:nowrap">${conf.toFixed(2)}</td>
+          <td>${flagHtml || "—"}</td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+    }
+    body.innerHTML = html;
+  }
+
+  // ── Source Docs Drawer ─────────────────────────────────────
+  const _fmtLabel = {
+    excel: "XLSX", pdf: "PDF", docx: "DOCX",
+    image: "IMG", text: "TXT", email: "EML",
+  };
+
+  async function openSourcePanel() {
+    document.getElementById("src-drawer").style.display = "flex";
+    document.getElementById("src-overlay").style.display = "block";
+    const body = document.getElementById("src-body");
+    body.innerHTML = "<p style='color:#718096;font-size:.85rem;grid-column:1/-1;'>Loading source files…</p>";
+
+    try {
+      const res = await fetch("/data/source-docs");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      renderSourceDocs(data.files || []);
+    } catch (e) {
+      body.innerHTML = `<p style='color:#fc8181;font-size:.85rem;grid-column:1/-1;'>Error: ${e.message}</p>`;
+    }
+  }
+
+  function closeSourcePanel() {
+    document.getElementById("src-drawer").style.display = "none";
+    document.getElementById("src-overlay").style.display = "none";
+  }
+
+  function renderSourceDocs(files) {
+    const body = document.getElementById("src-body");
+    if (!files.length) {
+      body.innerHTML = "<p style='color:#718096;font-size:.85rem;grid-column:1/-1;'>No vendor files found in data/vendor_responses/.</p>";
+      return;
+    }
+
+    const formatLabels = { excel:"XLSX", pdf:"PDF", docx:"DOCX", image:"IMG", text:"TXT", email:"EML" };
+    const fmtCls = { excel:"fmt-xlsx", pdf:"fmt-pdf", docx:"fmt-docx", image:"fmt-jpg", text:"fmt-txt", email:"fmt-txt" };
+
+    let html = "";
+    for (const f of files) {
+      const badge = `<span class="fmt-badge ${fmtCls[f.format] || 'fmt-txt'}">${formatLabels[f.format] || f.extension}</span>`;
+      const preview = f.preview_type === "image"
+        ? `<img class="src-img-preview" src="data:${f.mime};base64,${f.preview_b64}" alt="${f.filename}">`
+        : `<div class="src-preview">${escHtml(f.preview_text || "")}</div>`;
+
+      html += `<div class="src-card">
+        <div class="src-card-header">
+          ${badge}
+          <div>
+            <div class="src-filename">${escHtml(f.filename)}</div>
+            <div class="src-meta">${f.vendor_id} &nbsp;·&nbsp; ${f.size_kb} KB</div>
+          </div>
+        </div>
+        ${preview}
+      </div>`;
+    }
+    body.innerHTML = html;
+  }
+
+  // ── Create RFX ─────────────────────────────────────────────
+  let _generatedRfx = null;
+
+  function openRfxCreate() {
+    document.getElementById("rfx-create-overlay").style.display = "flex";
+    document.getElementById("rfx-preview").style.display = "none";
+    document.getElementById("rfx-preview-body").innerHTML = "";
+    _generatedRfx = null;
+  }
+
+  function closeRfxCreate() {
+    document.getElementById("rfx-create-overlay").style.display = "none";
+  }
+
+  async function generateRfx() {
+    const desc = document.getElementById("rfx-desc").value.trim();
+    if (!desc) return;
+    const btn = document.getElementById("rfx-gen-btn");
+    btn.disabled = true; btn.textContent = "Generating…";
+
+    try {
+      const res = await fetch("/rfx/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: desc, save: false }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      _generatedRfx = data.rfx;
+      renderRfxPreview(_generatedRfx);
+    } catch (e) {
+      alert("Error generating RFX: " + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = "Generate RFX";
+    }
+  }
+
+  function renderRfxPreview(rfx) {
+    const panel = document.getElementById("rfx-preview");
+    const body = document.getElementById("rfx-preview-body");
+    const items = rfx.line_items || [];
+    const q = rfx.questionnaire || [];
+    const t = rfx.terms || {};
+
+    let html = `
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.8rem;margin-bottom:14px;padding:12px;background:#0f1117;border-radius:8px;border:1px solid #2d3748;">
+        <span style="color:#718096">Category</span><span style="color:#e2e8f0;font-weight:600">${escHtml(rfx.category||"")}</span>
+        <span style="color:#718096">RFX ID</span><span style="color:#e2e8f0">${escHtml(rfx.rfx_id||"")}</span>
+        <span style="color:#718096">Issued</span><span style="color:#e2e8f0">${escHtml(rfx.issued_date||"")}</span>
+        <span style="color:#718096">Deadline</span><span style="color:#e2e8f0">${escHtml(rfx.deadline||"")}</span>
+        <span style="color:#718096">Currency</span><span style="color:#e2e8f0">${escHtml(t.currency||"INR")}</span>
+        <span style="color:#718096">Payment</span><span style="color:#e2e8f0">${t.payment_days||30} days</span>
+        <span style="color:#718096">Delivery</span><span style="color:#e2e8f0">${t.delivery_days||14} days</span>
+      </div>
+      <div style="font-size:.78rem;font-weight:600;color:#63b3ed;margin-bottom:6px;">${items.length} Line Items</div>
+      <div style="max-height:160px;overflow-y:auto;margin-bottom:12px;">
+        <table style="width:100%;border-collapse:collapse;font-size:.74rem;">
+          <thead><tr style="background:#1F4E79;color:#fff;">
+            <th style="padding:5px 8px;text-align:left;">#</th>
+            <th style="padding:5px 8px;text-align:left;">Description</th>
+            <th style="padding:5px 8px;text-align:left;">Spec</th>
+            <th style="padding:5px 8px;text-align:right;">Qty</th>
+            <th style="padding:5px 8px;text-align:left;">Unit</th>
+          </tr></thead><tbody>`;
+    for (const item of items) {
+      html += `<tr style="border-bottom:1px solid #2d3748;">
+        <td style="padding:4px 8px;color:#718096">${item.id}</td>
+        <td style="padding:4px 8px;color:#e2e8f0">${escHtml(item.description)}</td>
+        <td style="padding:4px 8px;color:#a0aec0;font-size:.7rem">${escHtml(item.spec||"")}</td>
+        <td style="padding:4px 8px;color:#e2e8f0;text-align:right">${(item.qty||0).toLocaleString()}</td>
+        <td style="padding:4px 8px;color:#a0aec0">${escHtml(item.unit||"")}</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>
+      <div style="font-size:.78rem;font-weight:600;color:#63b3ed;margin-bottom:6px;">Questionnaire (${q.length})</div>
+      <ul style="font-size:.75rem;color:#a0aec0;padding-left:16px;margin:0 0 4px;">
+        ${q.map(qq => `<li>${escHtml(qq)}</li>`).join("")}
+      </ul>`;
+    body.innerHTML = html;
+    panel.style.display = "block";
+  }
+
+  async function saveRfx() {
+    if (!_generatedRfx) return;
+    try {
+      const res = await fetch("/rfx/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: document.getElementById("rfx-desc").value, save: true }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      closeRfxCreate();
+      addMsg("assistant", `RFX "${_generatedRfx.rfx_id}" saved — ${_generatedRfx.line_items?.length || 0} line items, deadline ${_generatedRfx.deadline}. Click ⬆ Ingest RFX after vendors submit their responses.`, "RFX_CREATED");
+    } catch (e) {
+      alert("Save error: " + e.message);
+    }
+  }
+
+  // ── Charts ──────────────────────────────────────────────────
+  let _chartInstances = {};
+
+  function destroyChart(id) {
+    if (_chartInstances[id]) { _chartInstances[id].destroy(); delete _chartInstances[id]; }
+  }
+
+  async function openChartsPanel() {
+    document.getElementById("charts-drawer").style.display = "flex";
+    document.getElementById("charts-overlay").style.display = "block";
+    await populateLinePicker();
+    await loadPriceChart();
+  }
+
+  function closeChartsPanel() {
+    document.getElementById("charts-drawer").style.display = "none";
+    document.getElementById("charts-overlay").style.display = "none";
+  }
+
+  function switchChartTab(tab) {
+    ["price","scorecard","coverage"].forEach(t => {
+      document.getElementById(`chart-panel-${t}`).style.display = t === tab ? "block" : "none";
+      const btn = document.getElementById(`tab-${t}`);
+      if (t === tab) {
+        btn.style.borderBottom = "2px solid #63b3ed"; btn.style.color = "#63b3ed";
+      } else {
+        btn.style.borderBottom = "2px solid transparent"; btn.style.color = "#718096";
+      }
+    });
+    if (tab === "scorecard") loadScorecardChart();
+    if (tab === "coverage") loadCoverageChart();
+  }
+
+  async function populateLinePicker() {
+    const sel = document.getElementById("line-picker");
+    if (sel.options.length > 0) return;
+    try {
+      const res = await fetch(`/data/comparison?rfx_id=${rfxId}`);
+      const data = await res.json();
+      const vendors = Object.values(data.vendors || {});
+      if (!vendors.length) return;
+      const lines = vendors[0];
+      sel.innerHTML = "";
+      lines.forEach(l => {
+        const opt = document.createElement("option");
+        opt.value = l.line_id;
+        opt.textContent = `#${l.line_id} — ${(l.description||"").slice(0,40)}`;
+        sel.appendChild(opt);
+      });
+    } catch {}
+  }
+
+  async function loadPriceChart() {
+    const lineId = document.getElementById("line-picker").value || 1;
+    try {
+      const res = await fetch(`/data/chart/price-comparison?rfx_id=${rfxId}&line_id=${lineId}`);
+      const data = await res.json();
+      destroyChart("price");
+      const ctx = document.getElementById("chart-price").getContext("2d");
+      const vendors = data.vendors || [];
+      const colors = vendors.map(v =>
+        v.price_inr == null ? "#4a5568" : v.confidence >= 0.7 ? "#48bb78" : v.confidence >= 0.3 ? "#ecc94b" : "#fc8181"
+      );
+      _chartInstances["price"] = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: vendors.map(v => v.vendor_id),
+          datasets: [{
+            label: `Price (₹) — ${data.description||""}`,
+            data: vendors.map(v => v.price_inr),
+            backgroundColor: colors,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => ctx.raw != null ? `₹${ctx.raw.toLocaleString("en-IN")}` : "No quote" }
+          }},
+          scales: {
+            x: { ticks: { color: "#a0aec0" }, grid: { color: "#2d3748" } },
+            y: { ticks: { color: "#a0aec0", callback: v => `₹${v.toLocaleString("en-IN")}` }, grid: { color: "#2d3748" } }
+          }
+        }
+      });
+    } catch (e) { console.error(e); }
+  }
+
+  async function loadScorecardChart() {
+    try {
+      const res = await fetch(`/data/chart/vendor-scorecard?rfx_id=${rfxId}`);
+      const data = await res.json();
+      destroyChart("scorecard");
+      const ctx = document.getElementById("chart-scorecard").getContext("2d");
+      const vendors = data.vendors || [];
+      _chartInstances["scorecard"] = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: vendors.map(v => v.vendor_id),
+          datasets: [
+            {
+              label: "Avg Confidence",
+              data: vendors.map(v => v.avg_confidence),
+              backgroundColor: vendors.map(v => v.avg_confidence >= 0.7 ? "#48bb78" : v.avg_confidence >= 0.3 ? "#ecc94b" : "#fc8181"),
+              borderRadius: 4, yAxisID: "yConf",
+            },
+            {
+              label: "Lines Priced",
+              data: vendors.map(v => v.priced_lines),
+              backgroundColor: "#63b3ed88",
+              type: "bar", borderRadius: 4, yAxisID: "yLines",
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: "#a0aec0" } } },
+          scales: {
+            x: { ticks: { color: "#a0aec0" }, grid: { color: "#2d3748" } },
+            yConf: { position: "left", min: 0, max: 1, ticks: { color: "#a0aec0" }, grid: { color: "#2d3748" }, title: { display: true, text: "Confidence", color: "#718096" } },
+            yLines: { position: "right", ticks: { color: "#a0aec0" }, grid: { display: false }, title: { display: true, text: "Lines Priced", color: "#718096" } },
+          }
+        }
+      });
+      const flagHtml = vendors.map(v =>
+        `<span style="margin-right:14px;"><b style="color:#e2e8f0">${v.vendor_id}</b>: ${v.priced_lines}/${v.total_lines} lines · ${v.unique_flags} flag types${v.flag_names.length ? " ("+v.flag_names.join(", ")+")" : ""}</span>`
+      ).join("<br>");
+      document.getElementById("scorecard-flags").innerHTML = flagHtml;
+    } catch (e) { console.error(e); }
+  }
+
+  async function loadCoverageChart() {
+    try {
+      const res = await fetch(`/data/chart/coverage?rfx_id=${rfxId}`);
+      const data = await res.json();
+      const vendors = data.vendors || [];
+      const lines = data.lines || [];
+      const cells = data.cells || {};
+
+      let html = `<table style="border-collapse:collapse;font-size:.65rem;min-width:max-content;">
+        <thead><tr>
+          <th style="padding:4px 8px;color:#718096;text-align:left;position:sticky;left:0;background:#1a1f2e;">Line</th>
+          ${vendors.map(v => `<th style="padding:4px 8px;color:#63b3ed;text-align:center;min-width:80px;">${escHtml(v)}</th>`).join("")}
+        </tr></thead><tbody>`;
+      for (const line of lines) {
+        html += `<tr><td style="padding:3px 8px;color:#a0aec0;position:sticky;left:0;background:#1a1f2e;white-space:nowrap;">#${line.id} ${escHtml(line.description)}</td>`;
+        for (const vid of vendors) {
+          const cell = (cells[vid] || {})[line.id];
+          const has = cell?.has_price;
+          const conf = cell?.confidence ?? 0;
+          const bg = has ? (conf >= 0.7 ? "#1a4731" : conf >= 0.3 ? "#2d2a00" : "#3d1a1a") : "#2d1a1a";
+          const icon = has ? (conf >= 0.7 ? "✅" : conf >= 0.3 ? "⚠" : "🔴") : "—";
+          html += `<td style="padding:3px 6px;text-align:center;background:${bg};border:1px solid #0f1117;" title="${has ? "conf "+conf : "No quote"}">${icon}</td>`;
+        }
+        html += "</tr>";
+      }
+      html += "</tbody></table>";
+      document.getElementById("coverage-grid").innerHTML = html;
+    } catch (e) { console.error(e); }
+  }
+
+  // ── RFX Picker ─────────────────────────────────────────────
+  let _rfxList = [];
+
+  async function openRfxPicker() {
+    document.getElementById("rfx-picker-overlay").style.display = "flex";
+    const body = document.getElementById("rfx-picker-list");
+    body.innerHTML = "<p style='color:#718096;font-size:.82rem;padding:8px;'>Loading…</p>";
+    try {
+      const res = await fetch("/rfx/list");
+      const data = await res.json();
+      _rfxList = data.rfx_list || [];
+      renderRfxList(_rfxList);
+    } catch (e) {
+      body.innerHTML = `<p style='color:#fc8181;font-size:.82rem;padding:8px;'>Error: ${e.message}</p>`;
+    }
+  }
+
+  function closeRfxPicker() {
+    document.getElementById("rfx-picker-overlay").style.display = "none";
+  }
+
+  function filterRfxList() {
+    const q = document.getElementById("rfx-search").value.toLowerCase();
+    renderRfxList(_rfxList.filter(r =>
+      r.rfx_id.toLowerCase().includes(q) || (r.category||"").toLowerCase().includes(q)
+    ));
+  }
+
+  function renderRfxList(list) {
+    const body = document.getElementById("rfx-picker-list");
+    if (!list.length) {
+      body.innerHTML = "<p style='color:#718096;font-size:.82rem;padding:8px;'>No RFXs found. Create one first.</p>";
+      return;
+    }
+    body.innerHTML = list.map(r => `
+      <div onclick="selectRfx('${escHtml(r.rfx_id)}','${escHtml(r.category)}','${escHtml(r.deadline)}',${r.line_count})"
+        style="padding:10px 12px;border-radius:8px;cursor:pointer;border:1px solid #2d3748;margin-bottom:6px;background:#0f1117;"
+        onmouseover="this.style.background='#1e2d45'" onmouseout="this.style.background='#0f1117'">
+        <div style="font-size:.82rem;font-weight:600;color:#e2e8f0;">${escHtml(r.rfx_id)} — ${escHtml(r.category)}</div>
+        <div style="font-size:.72rem;color:#718096;margin-top:2px;">Deadline: ${escHtml(r.deadline)} &nbsp;·&nbsp; ${r.line_count} line items</div>
+      </div>
+    `).join("");
+  }
+
+  function selectRfx(id, category, deadline, lineCount) {
+    rfxId = id;
+    document.getElementById("rfx-label").textContent = "RFx: " + id;
+    document.getElementById("rfx-select-btn").style.display = "none";
+    document.getElementById("rfx-active-wrap").style.display = "flex";
+    document.querySelectorAll(".rfx-btn").forEach(b => b.style.display = "");
+    closeRfxPicker();
+    const wm = document.getElementById("welcome-msg");
+    if (wm) wm.textContent = `${id} — ${category} · ${lineCount} lines · deadline ${deadline}. Ask any procurement question or use the quick buttons above.`;
+  }
+
+  // ── RFX Info Popover ───────────────────────────────────────
+  function toggleRfxPopover(e) {
+    e.stopPropagation();
+    const pop = document.getElementById("rfx-popover");
+    pop.style.display = pop.style.display === "none" ? "block" : "none";
+  }
+  document.addEventListener("click", () => {
+    document.getElementById("rfx-popover").style.display = "none";
+  });
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+</script>
+</body>
+</html>

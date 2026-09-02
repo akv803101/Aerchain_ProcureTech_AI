@@ -1,0 +1,98 @@
+{
+  "rfx_id": "RFX-001",
+  "total": 26,
+  "max": 30,
+  "pct": 86.66666666666667,
+  "results": [
+    {
+      "id": "Q01",
+      "label": "Cheapest overall",
+      "score": 2,
+      "reasoning": "Answer correctly identifies vendor_b as cheapest overall (₹1,415.40), provides complete INR totals for all vendors, ranks them by total price, and appropriately filters out low-confidence vendor_e with clear justification—meeting all evaluation criteria."
+    },
+    {
+      "id": "Q02",
+      "label": "Cheapest for a specific line",
+      "score": 1,
+      "reasoning": "Answer correctly identifies vendor_e and states the price in INR, meeting core criteria, but the data quality warning and low confidence score (0.5) introduce significant uncertainty about accuracy that should disqualify a perfect score."
+    },
+    {
+      "id": "Q03",
+      "label": "Freight terms",
+      "score": 2,
+      "reasoning": "Answer comprehensively covers freight terms for all vendors, correctly identifies vendor_e freight as unquantified/extra with no numeric amount, and provides clear documentation of the data quality issue as required."
+    },
+    {
+      "id": "Q04",
+      "label": "Discount terms",
+      "score": 2,
+      "reasoning": "Answer fully and correctly identifies vendor_b's 5% volume discount with the precise condition of orders above ₹2,00,000 (₹200,000), meeting all stated criteria with clear presentation and additional helpful context about other vendors."
+    },
+    {
+      "id": "Q05",
+      "label": "Questionnaire — ISO certification",
+      "score": 1,
+      "reasoning": "The answer correctly identifies ISO certification status for 4 of 5 vendors but acknowledges missing data for vendor_e rather than definitively stating its non-certification status, which partially meets the requirement to cover all 5 vendors with clear yes/no designations."
+    },
+    {
+      "id": "Q06",
+      "label": "Questionnaire — lead time",
+      "score": 2,
+      "reasoning": "Answer correctly identifies vendor_a as having the shortest lead time (12 days) among ISO-certified vendors, explicitly states the numeric lead time in days, and properly joins both required data points (lead_time_days + iso_certified) with clear supporting evidence."
+    },
+    {
+      "id": "Q07",
+      "label": "Flag summary",
+      "score": 2,
+      "reasoning": "Answer comprehensively identifies 6 distinct flag types (VALUE_IN_PROSE, UNIT_MISMATCH, CURRENCY_CONVERTED, LOW_LEGIBILITY, PRICE_MISSING, TEMPORAL_REFERENCE, UNIT_INFERRED) across multiple vendors with detailed quantification and confidence metrics, fully satisfying the requirement of at least 3 distinct flags."
+    },
+    {
+      "id": "Q08",
+      "label": "Confidence filter",
+      "score": 2,
+      "reasoning": "Answer fully identifies specific vendors with low confidence (vendor_e at 0.167, vendor_d at 0.653), lists detailed flag types and affected line counts, provides clear verification recommendations, and contextualizes acceptable alternatives—meeting all evaluation criteria."
+    },
+    {
+      "id": "Q09",
+      "label": "Price delta between two vendors",
+      "score": 2,
+      "reasoning": "Answer fully meets all criteria: provides percentage differences for all 30 lines (ranging from -3.33% to -4.62%), clearly states vendor_b is cheaper per line, includes comprehensive numeric figures with prices and deltas, and adds a calculated average discount of -3.73%."
+    },
+    {
+      "id": "Q10",
+      "label": "VP question — split award with questionnaire filter",
+      "score": 1,
+      "reasoning": "Answer correctly identifies qualified vendors and filters appropriately, but fails to deliver the required per-line split-award plan/summary table showing which qualified vendor wins each of the 30 lines with pricing breakdown."
+    },
+    {
+      "id": "Q11",
+      "label": "Cheapest — confidence filter applied",
+      "score": 2,
+      "reasoning": "The answer correctly applies the confidence threshold of 0.9, properly eliminates vendor_d and vendor_e, identifies vendor_b as the cheapest among high-confidence vendors with ₹1,506.70 total cost, and provides comprehensive supporting details with specific line-item comparisons."
+    },
+    {
+      "id": "Q12",
+      "label": "ISO-certified + lowest price join",
+      "score": 1,
+      "reasoning": "The answer correctly identifies ISO-certified vendors and calculates their totals, naming vendor_b as the lowest at ₹1,370.70, but fails to flag vendor_d's lower nominal price (₹1,338.67) as potentially unreliable due to CURRENCY_CONVERTED flags as required by the evaluation criteria—instead treating the missing data as the primary disqualifier."
+    },
+    {
+      "id": "Q13",
+      "label": "Exclude flagged vendors — clean vendor pricing",
+      "score": 2,
+      "reasoning": "Answer correctly identifies vendor_a and vendor_b as the only qualifying vendors with zero data quality flags, names vendor_b as the cheapest option with its total price (₹1,472.00), explicitly enumerates eliminated vendors, and provides detailed cost breakdowns meeting all evaluation criteria."
+    },
+    {
+      "id": "Q14",
+      "label": "Discount threshold trap",
+      "score": 2,
+      "reasoning": "Answer correctly identifies that vendor_b's total of ₹1,410.80 falls far below the ₹2,00,000 threshold, explicitly states the discount DOES NOT APPLY, maintains the effective price as ₹1,410.80 without applying the 5% discount, and accurately concludes vendor_b is cheaper than vendor_d at ₹1,427.67."
+    },
+    {
+      "id": "Q15",
+      "label": "Split award — rejection rate + ISO dual filter",
+      "score": 2,
+      "reasoning": "Answer correctly applies both filters (ISO certified AND rejection rate < 1%), explicitly rejects vendor_b despite lower pricing, awards all 30 lines to vendor_a as the sole qualifying vendor, provides complete line-by-line breakdown with accurate pricing, and calculates correct total of ₹14,62,500."
+    }
+  ]
+}

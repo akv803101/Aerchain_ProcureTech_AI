@@ -1,0 +1,50 @@
+{
+  "rfx_id": "RFX-001",
+  "category": "Corrugated Packaging",
+  "issued_date": "2026-09-01",
+  "deadline": "2026-09-10",
+  "line_items": [
+    {"id": 1,  "description": "3-ply box 30x20x10cm",          "spec": "Kraft 120gsm, RSC style",           "qty": 5000,  "unit": "per box"},
+    {"id": 2,  "description": "3-ply box 25x20x15cm",          "spec": "Kraft 120gsm, RSC style",           "qty": 8000,  "unit": "per box"},
+    {"id": 3,  "description": "3-ply box 40x25x20cm",          "spec": "Kraft 120gsm, RSC style",           "qty": 3000,  "unit": "per box"},
+    {"id": 4,  "description": "3-ply box 20x15x10cm",          "spec": "Kraft 120gsm, RSC style",           "qty": 10000, "unit": "per box"},
+    {"id": 5,  "description": "3-ply box 35x25x15cm",          "spec": "Kraft 120gsm, RSC style",           "qty": 6000,  "unit": "per box"},
+    {"id": 6,  "description": "5-ply box 40x30x20cm",          "spec": "Kraft 150gsm, RSC style",           "qty": 3000,  "unit": "per box"},
+    {"id": 7,  "description": "5-ply box 50x40x30cm",          "spec": "Kraft 150gsm, RSC style",           "qty": 2000,  "unit": "per box"},
+    {"id": 8,  "description": "5-ply box 60x45x35cm",          "spec": "Kraft 150gsm, RSC style",           "qty": 1500,  "unit": "per box"},
+    {"id": 9,  "description": "5-ply box 35x25x20cm",          "spec": "Kraft 150gsm, RSC style",           "qty": 4000,  "unit": "per box"},
+    {"id": 10, "description": "5-ply box 45x35x25cm",          "spec": "Kraft 150gsm, RSC style",           "qty": 2500,  "unit": "per box"},
+    {"id": 11, "description": "7-ply heavy duty 60x40x30cm",   "spec": "Kraft 200gsm, double-wall",         "qty": 1000,  "unit": "per box"},
+    {"id": 12, "description": "7-ply heavy duty 70x50x40cm",   "spec": "Kraft 200gsm, double-wall",         "qty": 800,   "unit": "per box"},
+    {"id": 13, "description": "7-ply heavy duty 80x60x40cm",   "spec": "Kraft 200gsm, double-wall",         "qty": 500,   "unit": "per box"},
+    {"id": 14, "description": "7-ply heavy duty 90x60x50cm",   "spec": "Kraft 200gsm, double-wall",         "qty": 600,   "unit": "per box"},
+    {"id": 15, "description": "7-ply heavy duty 100x70x50cm",  "spec": "Kraft 200gsm, double-wall",         "qty": 500,   "unit": "per box"},
+    {"id": 16, "description": "Archive box 400x300x250mm",      "spec": "Kraft 120gsm, lid-base style",      "qty": 2000,  "unit": "per box"},
+    {"id": 17, "description": "Archive box 500x380x280mm",      "spec": "Kraft 150gsm, lid-base style",      "qty": 1500,  "unit": "per box"},
+    {"id": 18, "description": "Literature mailer A4 320x235x20mm", "spec": "Kraft 100gsm, peel-seal",       "qty": 5000,  "unit": "per box"},
+    {"id": 19, "description": "Literature mailer A3 450x320x25mm", "spec": "Kraft 100gsm, peel-seal",       "qty": 3000,  "unit": "per box"},
+    {"id": 20, "description": "Specialty gift box 300x200x100mm",  "spec": "Kraft 120gsm, tuck-top",        "qty": 2000,  "unit": "per box"},
+    {"id": 21, "description": "Corrugated divider set 400x300mm",  "spec": "3-ply, 6-cell grid",            "qty": 1500,  "unit": "per box"},
+    {"id": 22, "description": "Corrugated divider set 500x400mm",  "spec": "3-ply, 9-cell grid",            "qty": 1000,  "unit": "per box"},
+    {"id": 23, "description": "Honeycomb packing sheet 600x400mm", "spec": "30mm cell, 10mm thickness",     "qty": 2000,  "unit": "per box"},
+    {"id": 24, "description": "Honeycomb packing sheet 800x600mm", "spec": "30mm cell, 10mm thickness",     "qty": 1500,  "unit": "per box"},
+    {"id": 25, "description": "Corner protector set 50mm",          "spec": "3-ply, L-shape, qty 4 per set","qty": 5000,  "unit": "per box"},
+    {"id": 26, "description": "Die-cut tray 400x300mm",             "spec": "Custom as per drawing DT-400", "qty": 1000,  "unit": "per box"},
+    {"id": 27, "description": "Die-cut tray 500x400mm",             "spec": "Custom as per drawing DT-500", "qty": 800,   "unit": "per box"},
+    {"id": 28, "description": "Display box 300x200x150mm",          "spec": "Custom print, 4-color",        "qty": 1000,  "unit": "per box"},
+    {"id": 29, "description": "Display box 400x300x200mm",          "spec": "Custom print, 4-color",        "qty": 600,   "unit": "per box"},
+    {"id": 30, "description": "Custom die-cut tray 600x400mm",      "spec": "As per specification ref CT-600","qty": 500, "unit": "per box"}
+  ],
+  "questionnaire": [
+    "Are you ISO 9001 certified? (Yes/No + certificate number)",
+    "What is your average rejection rate (%) in the last 12 months?",
+    "Can you meet 14-day delivery from PO date?",
+    "Manufacturing location (city, state)?",
+    "Any deviations from the specifications listed?"
+  ],
+  "terms": {
+    "currency": "INR",
+    "payment_days": 30,
+    "delivery_days": 14
+  }
+}

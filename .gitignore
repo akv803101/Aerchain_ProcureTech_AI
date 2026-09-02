@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+db/aerchain.db
+data/exports/
+data/sent/
+*.xlsx
+.DS_Store
+.pytest_cache/
+*.egg-info/
+dist/
+build/

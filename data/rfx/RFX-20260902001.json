@@ -1,0 +1,27 @@
+{
+  "rfx_id": "RFX-20260902001",
+  "category": "Packaging Materials",
+  "issued_date": "2026-09-02",
+  "deadline": "2026-09-11",
+  "line_items": [
+    {
+      "id": 1,
+      "description": "Corrugated Box - Triple Wall / Double Wall",
+      "spec": "Outer Dimensions: 60cm x 60cm x 60cm (L x W x H), 5-ply corrugated board, Bursting Strength minimum 150 kg/cm², GSM: 150-180, Brown Kraft finish, self-locking or glued bottom",
+      "qty": 100,
+      "unit": "pieces"
+    }
+  ],
+  "questionnaire": [
+    "What is the bursting strength and GSM specification of the corrugated boxes you can supply, and do you have test reports to validate the same?",
+    "What is your confirmed lead time for delivering 100 pieces of 60x60x60 corrugated boxes, and can you meet a 14-day delivery window from the date of purchase order?",
+    "Are your corrugated boxes compliant with any relevant packaging standards such as IS 2771 (Indian Standard for corrugated fibreboard boxes), and can you provide relevant compliance or quality certificates?",
+    "Please confirm your manufacturing or warehouse location — are you able to deliver to our destination within the stipulated timeline, and what courier or logistics partner will you use?",
+    "Please highlight any deviations from the stated specifications (dimensions, ply, bursting strength, finish) and provide an alternative proposal if exact specifications cannot be met."
+  ],
+  "terms": {
+    "currency": "INR",
+    "payment_days": 30,
+    "delivery_days": 14
+  }
+}
