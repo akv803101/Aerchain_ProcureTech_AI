@@ -249,11 +249,12 @@ def _read_eml(file_path: str) -> tuple[str, list[tuple[str, bytes]]]:
 
 def _make_client() -> anthropic.AsyncAnthropic:
     import os
-    headers: dict = {}
-    workspace_id = os.getenv("ANTHROPIC_WORKSPACE_ID")
-    _err(f"[client] ANTHROPIC_WORKSPACE_ID={workspace_id!r}")
-    if workspace_id:
-        headers["anthropic-workspace-id"] = workspace_id
+    workspace_id = (
+        os.getenv("ANTHROPIC_WORKSPACE_ID")
+        or os.getenv("ANT_WS_ID")
+    )
+    _err(f"[client] workspace_id resolved={workspace_id!r}")
+    headers = {"anthropic-workspace-id": workspace_id} if workspace_id else {}
     return anthropic.AsyncAnthropic(default_headers=headers or None)
 
 
