@@ -1,5 +1,7 @@
 """FastAPI application entry-point for the Aerchain procurement AI."""
 
+import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -7,6 +9,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+logging.basicConfig(level=logging.INFO)
 load_dotenv(Path(__file__).parent.parent / ".env", override=False)
 
 from src.db.connection import init_db
@@ -16,6 +19,8 @@ from api.routes import chat, data, export, ingest, rfx
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    key = os.getenv("ANTHROPIC_API_KEY", "")
+    print(f"[startup] ANTHROPIC_API_KEY present={bool(key)} len={len(key)}", flush=True)
     yield
 
 
