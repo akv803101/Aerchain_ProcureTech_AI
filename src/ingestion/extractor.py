@@ -7,11 +7,16 @@ import base64
 import json
 import logging
 import re
+import sys
 from pathlib import Path
 
 import anthropic
 
 log = logging.getLogger(__name__)
+
+
+def _err(msg: str) -> None:
+    print(msg, file=sys.stderr, flush=True)
 
 from src.ingestion.schemas import ExtractionOutput, LineItemRaw
 
@@ -322,11 +327,15 @@ async def _call_claude_vision(file_path: str, rfx: dict) -> ExtractionOutput:
 # ── Public API ───────────────────────────────────────────────────────────────
 
 async def extract_excel(file_path: str, rfx: dict) -> ExtractionOutput:
+    _err(f"[extractor] extract_excel starting: {file_path}")
     try:
         content = _read_excel(file_path)
-        return await _call_claude_text(content, rfx)
+        _err(f"[extractor] excel read ok, calling claude")
+        result = await _call_claude_text(content, rfx)
+        _err(f"[extractor] excel done: {len(result.line_items)} items")
+        return result
     except Exception as exc:
-        log.error("extract_excel failed for %s: %s", file_path, exc, exc_info=True)
+        _err(f"[extractor] extract_excel FAILED: {type(exc).__name__}: {exc}")
         return _empty_output(rfx)
 
 
