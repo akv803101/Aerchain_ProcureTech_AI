@@ -9,16 +9,13 @@ from fastapi.staticfiles import StaticFiles
 
 load_dotenv(Path(__file__).parent.parent / ".env", override=False)
 
-from src.db.connection import init_db, comparison_table_is_empty
-from src.ingestion.pipeline import run_ingestion
+from src.db.connection import init_db
 from api.routes import chat, data, export, ingest, rfx
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    if await comparison_table_is_empty():
-        await run_ingestion("data/rfx/RFX-001.json", "data/vendor_responses")
     yield
 
 
