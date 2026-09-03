@@ -251,6 +251,7 @@ def _make_client() -> anthropic.AsyncAnthropic:
     import os
     headers: dict = {}
     workspace_id = os.getenv("ANTHROPIC_WORKSPACE_ID")
+    _err(f"[client] ANTHROPIC_WORKSPACE_ID={workspace_id!r}")
     if workspace_id:
         headers["anthropic-workspace-id"] = workspace_id
     return anthropic.AsyncAnthropic(default_headers=headers or None)

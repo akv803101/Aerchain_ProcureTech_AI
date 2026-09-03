@@ -20,7 +20,9 @@ from api.routes import chat, data, export, ingest, rfx
 async def lifespan(app: FastAPI):
     await init_db()
     key = os.getenv("ANTHROPIC_API_KEY", "")
+    wsid = os.getenv("ANTHROPIC_WORKSPACE_ID", "")
     print(f"[startup] ANTHROPIC_API_KEY present={bool(key)} len={len(key)}", flush=True)
+    print(f"[startup] ANTHROPIC_WORKSPACE_ID present={bool(wsid)} val={wsid[:12] if wsid else 'NOT SET'}", flush=True)
     yield
 
 
