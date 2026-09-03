@@ -1,11 +1,23 @@
 import os
 import aiosqlite
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-# On Railway a volume is mounted at /data — use it automatically.
-# Locally (no RAILWAY_ENVIRONMENT) fall back to db/aerchain.db.
-_default = "/data/aerchain.db" if os.getenv("RAILWAY_ENVIRONMENT") else "db/aerchain.db"
-DATABASE_URL = os.getenv("DATABASE_URL", _default)
+# Prefer /data (Railway volume) only if the directory actually exists and is writable.
+# Falls back to db/aerchain.db so the app never crashes on a missing mount.
+def _resolve_db_path() -> str:
+    explicit = os.getenv("DATABASE_URL")
+    if explicit:
+        return explicit
+    if os.getenv("RAILWAY_ENVIRONMENT"):
+        data_dir = Path("/data")
+        if data_dir.exists() and os.access(data_dir, os.W_OK):
+            return str(data_dir / "aerchain.db")
+    local = Path("db/aerchain.db")
+    local.parent.mkdir(parents=True, exist_ok=True)
+    return str(local)
+
+DATABASE_URL = _resolve_db_path()
 
 
 @asynccontextmanager

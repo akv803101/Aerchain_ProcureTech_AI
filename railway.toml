@@ -7,7 +7,3 @@ healthcheckPath = "/docs"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
-
-[[volumes]]
-name = "aerchain-db"
-mountPath = "/data"
