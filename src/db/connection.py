@@ -2,7 +2,10 @@ import os
 import aiosqlite
 from contextlib import asynccontextmanager
 
-DATABASE_URL = os.getenv("DATABASE_URL", "db/aerchain.db")
+# On Railway a volume is mounted at /data — use it automatically.
+# Locally (no RAILWAY_ENVIRONMENT) fall back to db/aerchain.db.
+_default = "/data/aerchain.db" if os.getenv("RAILWAY_ENVIRONMENT") else "db/aerchain.db"
+DATABASE_URL = os.getenv("DATABASE_URL", _default)
 
 
 @asynccontextmanager
