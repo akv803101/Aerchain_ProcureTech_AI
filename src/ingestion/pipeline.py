@@ -1,5 +1,6 @@
 """Ingestion pipeline: detect → extract → normalize → store."""
 
+import asyncio
 import json
 import logging
 import os
@@ -174,8 +175,13 @@ async def run_ingestion(
     total_lines = 0
     flag_counts: dict[str, int] = {}
 
-    for vf in vendor_files:
-        vendor_id, rows, error = await _process_one(str(vf), rfx)
+    # Process all vendors concurrently — all LLM calls run in parallel
+    results = await asyncio.gather(
+        *[_process_one(str(vf), rfx) for vf in vendor_files],
+        return_exceptions=False,
+    )
+
+    for vendor_id, rows, error in results:
         if error or rows is None:
             vendors_failed.append(vendor_id)
             failure_detail[vendor_id] = error or "unknown"
