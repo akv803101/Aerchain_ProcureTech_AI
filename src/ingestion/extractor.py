@@ -5,10 +5,13 @@ Extraction prompt is taken verbatim from PRD Section 6. Do not modify it.
 
 import base64
 import json
+import logging
 import re
 from pathlib import Path
 
 import anthropic
+
+log = logging.getLogger(__name__)
 
 from src.ingestion.schemas import ExtractionOutput, LineItemRaw
 
@@ -263,7 +266,8 @@ async def _call_claude_text(content: str, rfx: dict) -> ExtractionOutput:
     try:
         raw = _parse_claude_json(raw_text)
         return _build_extraction_output(raw)
-    except (json.JSONDecodeError, KeyError, TypeError):
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        log.error("JSON parse failed in text extraction: %s | raw=%s", exc, raw_text[:200])
         return _empty_output(rfx)
 
 
@@ -310,7 +314,8 @@ async def _call_claude_vision(file_path: str, rfx: dict) -> ExtractionOutput:
     try:
         raw = _parse_claude_json(raw_text)
         return _build_extraction_output(raw)
-    except (json.JSONDecodeError, KeyError, TypeError):
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        log.error("JSON parse failed in vision extraction: %s | raw=%s", exc, raw_text[:200])
         return _empty_output(rfx)
 
 
@@ -320,7 +325,8 @@ async def extract_excel(file_path: str, rfx: dict) -> ExtractionOutput:
     try:
         content = _read_excel(file_path)
         return await _call_claude_text(content, rfx)
-    except Exception:
+    except Exception as exc:
+        log.error("extract_excel failed for %s: %s", file_path, exc, exc_info=True)
         return _empty_output(rfx)
 
 
@@ -359,7 +365,8 @@ async def _call_claude_pdf_direct(file_path: str, rfx: dict) -> ExtractionOutput
     try:
         raw = _parse_claude_json(raw_text)
         return _build_extraction_output(raw)
-    except (json.JSONDecodeError, KeyError, TypeError):
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        log.error("JSON parse failed in PDF direct extraction: %s | raw=%s", exc, raw_text[:200])
         return _empty_output(rfx)
 
 
@@ -376,12 +383,13 @@ async def extract_pdf(file_path: str, rfx: dict) -> ExtractionOutput:
         content, _ = _read_pdf(file_path)
         if len(content.strip()) >= 150:
             return await _call_claude_text(content, rfx)
-    except Exception:
-        pass
+    except Exception as exc:
+        log.warning("PDF text read failed for %s, falling back to direct: %s", file_path, exc)
     # Sparse text or error → send PDF directly (handles embedded images too)
     try:
         return await _call_claude_pdf_direct(file_path, rfx)
-    except Exception:
+    except Exception as exc:
+        log.error("extract_pdf failed for %s: %s", file_path, exc, exc_info=True)
         return _empty_output(rfx)
 
 
@@ -389,14 +397,16 @@ async def extract_docx(file_path: str, rfx: dict) -> ExtractionOutput:
     try:
         content = _read_docx(file_path)
         return await _call_claude_text(content, rfx)
-    except Exception:
+    except Exception as exc:
+        log.error("extract_docx failed for %s: %s", file_path, exc, exc_info=True)
         return _empty_output(rfx)
 
 
 async def extract_image(file_path: str, rfx: dict) -> ExtractionOutput:
     try:
         return await _call_claude_vision(file_path, rfx)
-    except Exception:
+    except Exception as exc:
+        log.error("extract_image failed for %s: %s", file_path, exc, exc_info=True)
         return _empty_output(rfx)
 
 
@@ -404,7 +414,8 @@ async def extract_text(file_path: str, rfx: dict) -> ExtractionOutput:
     try:
         content = _read_text(file_path)
         return await _call_claude_text(content, rfx)
-    except Exception:
+    except Exception as exc:
+        log.error("extract_text failed for %s: %s", file_path, exc, exc_info=True)
         return _empty_output(rfx)
 
 
