@@ -10,9 +10,13 @@ def _resolve_db_path() -> str:
     if explicit:
         return explicit
     if os.getenv("RAILWAY_ENVIRONMENT"):
+        # Persistent volume (user must create in Railway dashboard)
         data_dir = Path("/data")
         if data_dir.exists() and os.access(data_dir, os.W_OK):
             return str(data_dir / "aerchain.db")
+        # /tmp is always writable — ephemeral but never crashes on startup
+        return "/tmp/aerchain.db"
+    # Local development
     local = Path("db/aerchain.db")
     local.parent.mkdir(parents=True, exist_ok=True)
     return str(local)
